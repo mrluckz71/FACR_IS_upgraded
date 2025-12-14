@@ -1,0 +1,40 @@
+<nav class="nav">
+  <ul>
+    <li><a href="/">Domů</a></li>
+    <li><a href="/articles.html">Články</a></li>
+    <li id="navMyArticles" style="display:none;"><a href="/my-articles.html">Moje články</a></li>
+    <li id="navAddArticle" style="display:none;"><a href="/add-article.html">Přidat článek</a></li>
+    <li id="navProfile" style="display:none;"><a href="/profile.html">Profil</a></li>
+    <li id="navLogin" style="display:none;"><a href="/login.html">Přihlášení</a></li>
+    <li id="navRegister" style="display:none;"><a href="/register.html">Registrace</a></li>
+    <li><a href="/about.html">O nás</a></li>
+    <li><a href="/contact.html">Kontakt</a></li>
+  </ul>
+</nav>
+
+<script>
+  function updateNav() {
+    const user = Session.user;
+    const navMyArticles = document.getElementById('navMyArticles');
+    const navAddArticle = document.getElementById('navAddArticle');
+    const navProfile = document.getElementById('navProfile');
+    const navLogin = document.getElementById('navLogin');
+    const navRegister = document.getElementById('navRegister');
+
+    if (user) {
+      navMyArticles.style.display = 'block';
+      navAddArticle.style.display = 'block';
+      navProfile.style.display = 'block';
+      navLogin.style.display = 'none';
+      navRegister.style.display = 'none';
+    } else {
+      navMyArticles.style.display = 'none';
+      navAddArticle.style.display = 'none';
+      navProfile.style.display = 'none';
+      navLogin.style.display = 'block';
+      navRegister.style.display = 'block';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', updateNav);
+</script>

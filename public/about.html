@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FACR.IS - O nás</title>
+    <link rel="stylesheet" type="text/css" href="../styles/styles.css" media="all">
+    <link rel="stylesheet" href="../styles/print.css" media="print">
+    <link rel="icon" type="image/png" href="../img/logo.png">
+    <script src="api.js"></script>
+</head>
+<body>
+    <div id="header"></div>
+    <div id="nav"></div>
+
+    <section class="sect-field-cla">
+        <h2>O nás</h2>
+        <p>FACR.IS je systém pro správu článků a uživatelských profilů.</p>
+        <p>Tento projekt byl vytvořen jako demonstrace Netlify Functions a moderních webových technologií.</p>
+    </section>
+
+    <script>
+        // Load header and nav
+        async function loadIncludes() {
+            try {
+                const headerRes = await fetch('header.html');
+                document.getElementById('header').innerHTML = await headerRes.text();
+                
+                const navRes = await fetch('nav.html');
+                document.getElementById('nav').innerHTML = await navRes.text();
+
+                updateNav();
+                updateHeaderUser();
+            } catch (error) {
+                console.error('Error loading includes:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadIncludes);
+    </script>
+</body>
+</html>

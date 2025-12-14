@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FACR.IS - Přidání článku</title>
+    <link rel="stylesheet" type="text/css" href="../styles/styles.css" media="all">
+    <link rel="stylesheet" href="../styles/print.css" media="print">
+    <link rel="icon" type="image/png" href="../img/logo.png">
+    <script src="api.js"></script>
+</head>
+<body>
+    <div id="header"></div>
+    <div id="nav"></div>
+
+    <div>
+        <form id="addArticleForm">
+            <fieldset class="sect-field-reg">
+                <legend>Přidej článek</legend>
+                <div id="errorMessage" class="error" style="display:none;"></div>
+                <div id="successMessage" class="success" style="display:none;"></div>
+                
+                <label for="title">Nadpis</label>
+                <input class="inputbox-log" type="text" id="title" name="title" placeholder="Nadpis" required>
+                
+                <label for="content">Text článku</label>
+                <textarea class="box-clanek" id="content" name="content" placeholder="Sem vložte svůj text" required></textarea>
+                
+                <input class="button" type="submit" value="Odeslat">
+            </fieldset>
+        </form>
+    </div>
+
+    <script>
+        // Load header and nav
+        async function loadIncludes() {
+            try {
+                const headerRes = await fetch('header.html');
+                document.getElementById('header').innerHTML = await headerRes.text();
+                
+                const navRes = await fetch('nav.html');
+                document.getElementById('nav').innerHTML = await navRes.text();
+
+                updateNav();
+                updateHeaderUser();
+
+                // Check if logged in
+                if (!Session.isLoggedIn()) {
+                    window.location.href = '/login.html';
+                }
+            } catch (error) {
+                console.error('Error loading includes:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadIncludes();
+
+            document.getElementById('addArticleForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const title = document.getElementById('title').value;
+                const content = document.getElementById('content').value;
+                const errorDiv = document.getElementById('errorMessage');
+                const successDiv = document.getElementById('successMessage');
+
+                if (!title || !content) {
+                    errorDiv.textContent = 'Všechna pole musí být vyplněna';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                try {
+                    await addArticle(title, content);
+                    successDiv.textContent = 'Článek byl úspěšně přidán!';
+                    successDiv.style.display = 'block';
+                    document.getElementById('addArticleForm').reset();
+                    
+                    setTimeout(() => {
+                        window.location.href = '/my-articles.html';
+                    }, 2000);
+                } catch (error) {
+                    errorDiv.textContent = error.message;
+                    errorDiv.style.display = 'block';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FACR.IS - Profil</title>
+    <link rel="stylesheet" type="text/css" href="../styles/styles.css" media="all">
+    <link rel="stylesheet" href="../styles/print.css" media="print">
+    <link rel="icon" type="image/png" href="../img/logo.png">
+    <script src="api.js"></script>
+</head>
+<body>
+    <div id="header"></div>
+    <div id="nav"></div>
+
+    <section class="sect-field-cla">
+        <h2>Profil</h2>
+        <div id="profileContainer">
+            <p>Načítání...</p>
+        </div>
+    </section>
+
+    <script>
+        // Load header and nav
+        async function loadIncludes() {
+            try {
+                const headerRes = await fetch('header.html');
+                document.getElementById('header').innerHTML = await headerRes.text();
+                
+                const navRes = await fetch('nav.html');
+                document.getElementById('nav').innerHTML = await navRes.text();
+
+                updateNav();
+                updateHeaderUser();
+
+                // Check if logged in
+                if (!Session.isLoggedIn()) {
+                    window.location.href = '/login.html';
+                }
+            } catch (error) {
+                console.error('Error loading includes:', error);
+            }
+        }
+
+        function loadProfile() {
+            const user = Session.user;
+            const container = document.getElementById('profileContainer');
+
+            if (!user) {
+                container.innerHTML = '<p>Nejste přihlášeni.</p>';
+                return;
+            }
+
+            let html = `
+                <div class="profile-info">
+                    <p><strong>Jméno:</strong> ${user.name}</p>
+                    <p><strong>Přijmení:</strong> ${user.surname}</p>
+                    <p><strong>Email:</strong> ${user.email}</p>
+                    <p><strong>ID:</strong> ${user.id}</p>
+                </div>
+                <p><a href="my-articles.html">Moje články</a></p>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadIncludes();
+            loadProfile();
+        });
+    </script>
+</body>
+</html>

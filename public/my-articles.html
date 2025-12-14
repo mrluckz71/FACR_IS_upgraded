@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FACR.IS - Moje články</title>
+    <link rel="stylesheet" type="text/css" href="../styles/styles.css" media="all">
+    <link rel="stylesheet" href="../styles/print.css" media="print">
+    <link rel="icon" type="image/png" href="../img/logo.png">
+    <script src="api.js"></script>
+</head>
+<body>
+    <div id="header"></div>
+    <div id="nav"></div>
+
+    <section class="sect-field-my-cla">
+        <h2>Moje Články</h2>
+        <div id="articlesContainer">
+            <p>Načítání...</p>
+        </div>
+    </section>
+
+    <script>
+        // Load header and nav
+        async function loadIncludes() {
+            try {
+                const headerRes = await fetch('header.html');
+                document.getElementById('header').innerHTML = await headerRes.text();
+                
+                const navRes = await fetch('nav.html');
+                document.getElementById('nav').innerHTML = await navRes.text();
+
+                updateNav();
+                updateHeaderUser();
+
+                // Check if logged in
+                if (!Session.isLoggedIn()) {
+                    window.location.href = '/login.html';
+                }
+            } catch (error) {
+                console.error('Error loading includes:', error);
+            }
+        }
+
+        async function loadMyArticles() {
+            try {
+                const userId = Session.userId;
+                const articles = await getUserArticles(userId);
+                const container = document.getElementById('articlesContainer');
+
+                if (!articles || articles.length === 0) {
+                    container.innerHTML = '<p>Nemáte žádné články.</p>';
+                    return;
+                }
+
+                let html = '<table><thead><tr><th>Název</th><th>Autor</th><th>Datum</th><th>Upravit</th><th>Smazat</th><th>Detail</th></tr></thead><tbody>';
+                
+                articles.forEach(article => {
+                    html += `<tr>
+                        <td>${article.title}</td>
+                        <td>${article.email}</td>
+                        <td>${article.date}</td>
+                        <td><a href="edit-article.html?id=${article.id}">Upravit</a></td>
+                        <td><button onclick="deleteAndRefresh('${article.id}')">Smazat</button></td>
+                        <td><a href="article-detail.html?id=${article.id}">Zobrazit</a></td>
+                    </tr>`;
+                });
+
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading articles:', error);
+                document.getElementById('articlesContainer').innerHTML = '<p>Chyba při načítání článků.</p>';
+            }
+        }
+
+        async function deleteAndRefresh(articleId) {
+            if (!confirm('Opravdu chcete smazat tento článek?')) {
+                return;
+            }
+
+            try {
+                await deleteArticle(articleId);
+                loadMyArticles();
+            } catch (error) {
+                alert('Chyba při mazání: ' + error.message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadIncludes();
+            loadMyArticles();
+        });
+
+        // Make function global
+        window.deleteAndRefresh = deleteAndRefresh;
+    </script>
+</body>
+</html>

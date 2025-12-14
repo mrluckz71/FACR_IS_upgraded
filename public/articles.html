@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FACR.IS - Články</title>
+    <link rel="stylesheet" type="text/css" href="../styles/styles.css" media="all">
+    <link rel="stylesheet" href="../styles/print.css" media="print">
+    <link rel="icon" type="image/png" href="../img/logo.png">
+    <script src="api.js"></script>
+</head>
+<body>
+    <div id="header"></div>
+    <div id="nav"></div>
+
+    <section class="sect-field-cla">
+        <div id="myArticlesButtons" style="display:none;" class="my_art_button">
+            <a class="odkaz-login" href="add-article.html">Přidat článek</a>
+            <a class="odkaz-login" href="my-articles.html">Moje články</a>
+        </div>
+
+        <h2>Články</h2>
+        <div id="articlesContainer">
+            <p>Načítání...</p>
+        </div>
+    </section>
+
+    <script>
+        // Load header and nav
+        async function loadIncludes() {
+            try {
+                const headerRes = await fetch('header.html');
+                document.getElementById('header').innerHTML = await headerRes.text();
+                
+                const navRes = await fetch('nav.html');
+                document.getElementById('nav').innerHTML = await navRes.text();
+
+                updateNav();
+                updateHeaderUser();
+
+                // Show buttons if logged in
+                const btns = document.getElementById('myArticlesButtons');
+                if (Session.isLoggedIn()) {
+                    btns.style.display = 'block';
+                } else {
+                    btns.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading includes:', error);
+            }
+        }
+
+        async function loadArticles() {
+            try {
+                const articles = await getArticles();
+                const container = document.getElementById('articlesContainer');
+
+                if (!articles || articles.length === 0) {
+                    container.innerHTML = '<p>Žádné články.</p>';
+                    return;
+                }
+
+                let html = '<table><thead><tr><th>Název</th><th>Autor</th><th>Datum</th><th>Detail</th></tr></thead><tbody>';
+                
+                articles.forEach(article => {
+                    html += `<tr>
+                        <td>${article.title}</td>
+                        <td>${article.email}</td>
+                        <td>${article.date}</td>
+                        <td><a href="article-detail.html?id=${article.id}">Zobrazit</a></td>
+                    </tr>`;
+                });
+
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading articles:', error);
+                document.getElementById('articlesContainer').innerHTML = '<p>Chyba při načítání článků.</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadIncludes();
+            loadArticles();
+        });
+    </script>
+</body>
+</html>

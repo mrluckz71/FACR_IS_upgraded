@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FACR.IS - Přihlášení</title>
+    <link rel="stylesheet" type="text/css" href="../styles/styles.css" media="all">
+    <link rel="stylesheet" href="../styles/print.css" media="print">
+    <link rel="icon" type="image/png" href="../img/logo.png">
+    <script src="api.js"></script>
+</head>
+<body>
+    <div id="header"></div>
+    <div id="nav"></div>
+
+    <section class="sect-log">
+        <div class="form-box-log">
+            <form id="loginForm">
+                <h2>Přihlášení</h2>
+                <div id="errorMessage" class="error" style="display:none;"></div>
+                
+                <div class="inputbox-log">
+                    <label for="email">Email: </label>
+                    <input type="email" id="email" name="email" placeholder="Email*" required>
+                </div>
+                <div class="inputbox-log">
+                    <label for="password">Heslo: </label>
+                    <input type="password" id="password" name="password" placeholder="Heslo*" required>
+                </div>
+                
+                <button type="submit" class="login-log">Přihlásit se</button>
+                
+                <div class="register-log">
+                    <div><p>Ještě nemáte účet?</p><a class="login-reg" href="register.html">Zaregistrovat se</a></div>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <script>
+        // Load header and nav
+        async function loadIncludes() {
+            try {
+                const headerRes = await fetch('header.html');
+                document.getElementById('header').innerHTML = await headerRes.text();
+                
+                const navRes = await fetch('nav.html');
+                document.getElementById('nav').innerHTML = await navRes.text();
+
+                updateNav();
+                updateHeaderUser();
+
+                // If already logged in, redirect to main
+                if (Session.isLoggedIn()) {
+                    window.location.href = '/articles.html';
+                }
+            } catch (error) {
+                console.error('Error loading includes:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadIncludes();
+
+            document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const errorDiv = document.getElementById('errorMessage');
+
+                try {
+                    await login(email, password);
+                    window.location.href = '/articles.html';
+                } catch (error) {
+                    errorDiv.textContent = error.message;
+                    errorDiv.style.display = 'block';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

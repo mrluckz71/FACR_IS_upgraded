@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FACR.IS - Detail článku</title>
+    <link rel="stylesheet" type="text/css" href="../styles/styles.css" media="all">
+    <link rel="stylesheet" href="../styles/print.css" media="print">
+    <link rel="icon" type="image/png" href="../img/logo.png">
+    <script src="api.js"></script>
+</head>
+<body>
+    <div id="header"></div>
+    <div id="nav"></div>
+
+    <div class="content">
+        <div id="articleContainer">
+            <p>Načítání...</p>
+        </div>
+    </div>
+
+    <script>
+        // Load header and nav
+        async function loadIncludes() {
+            try {
+                const headerRes = await fetch('header.html');
+                document.getElementById('header').innerHTML = await headerRes.text();
+                
+                const navRes = await fetch('nav.html');
+                document.getElementById('nav').innerHTML = await navRes.text();
+
+                updateNav();
+                updateHeaderUser();
+            } catch (error) {
+                console.error('Error loading includes:', error);
+            }
+        }
+
+        async function loadArticle() {
+            try {
+                // Get article ID from URL
+                const params = new URLSearchParams(window.location.search);
+                const articleId = params.get('id');
+
+                if (!articleId) {
+                    document.getElementById('articleContainer').innerHTML = '<p>Článek nenalezen.</p>';
+                    return;
+                }
+
+                const article = await getArticle(articleId);
+                const container = document.getElementById('articleContainer');
+
+                if (!article) {
+                    container.innerHTML = '<p>Článek nenalezen.</p>';
+                    return;
+                }
+
+                let html = `
+                    <article>
+                        <h1>${article.title}</h1>
+                        <p><strong>Autor:</strong> ${article.email}</p>
+                        <p><strong>Datum:</strong> ${article.date}</p>
+                        <hr>
+                        <div class="article-content">
+                            ${article.content}
+                        </div>
+                    </article>
+                    <p><a href="articles.html">Zpět na články</a></p>
+                `;
+
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading article:', error);
+                document.getElementById('articleContainer').innerHTML = '<p>Chyba při načítání článku.</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadIncludes();
+            loadArticle();
+        });
+    </script>
+</body>
+</html>

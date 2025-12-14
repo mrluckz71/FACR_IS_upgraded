@@ -1,0 +1,29 @@
+<header class="header">
+  <div class="header-content">
+    <h1><a href="/">FACR.IS</a></h1>
+    <div class="header-user">
+      <span id="userDisplay"></span>
+      <button id="logoutBtn" style="display:none;" onclick="logout()">Odhlásit se</button>
+    </div>
+  </div>
+</header>
+
+<script>
+  // Check if user is logged in and show/hide logout button
+  function updateHeaderUser() {
+    const user = Session.user;
+    const userDisplay = document.getElementById('userDisplay');
+    const logoutBtn = document.getElementById('logoutBtn');
+    
+    if (user) {
+      userDisplay.textContent = `Přihlášen: ${user.name} ${user.surname}`;
+      logoutBtn.style.display = 'inline-block';
+    } else {
+      userDisplay.textContent = '';
+      logoutBtn.style.display = 'none';
+    }
+  }
+
+  // Update header on page load
+  document.addEventListener('DOMContentLoaded', updateHeaderUser);
+</script>

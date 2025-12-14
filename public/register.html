@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FACR.IS - Registrace</title>
+    <link rel="stylesheet" type="text/css" href="../styles/styles.css" media="all">
+    <link rel="stylesheet" href="../styles/print.css" media="print">
+    <link rel="icon" type="image/png" href="../img/logo.png">
+    <script src="api.js"></script>
+</head>
+<body>
+    <div id="header"></div>
+    <div id="nav"></div>
+
+    <section class="sect-reg">
+        <div class="form-box-reg">
+            <form id="registerForm">
+                <h2>Registrace</h2>
+                <div id="errorMessage" class="error" style="display:none;"></div>
+                
+                <fieldset class="sect-field-reg">
+                    <legend>Profil</legend>
+                    <div>
+                        <a class="login-reg" href="login.html">Už máte účet? </a>
+                    </div>
+                    <div>
+                        <input class="login-reg" type="reset" id="reset" value="Vymazat zadané údaje">
+                    </div>
+                    <div class="inputbox-reg">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" placeholder="Email*" required>
+                    </div>
+                    <div class="inputbox-reg">
+                        <label for="password">Heslo</label>
+                        <input type="password" id="password" name="password" placeholder="Heslo*" required>
+                    </div>
+                    <div class="inputbox-reg">
+                        <label for="password2">Potvrzení hesla</label>
+                        <input type="password" id="password2" name="password2" placeholder="Potvrzení hesla*" required>
+                    </div>
+                    <div>
+                        <p id="length" class="validation"></p>
+                        <p id="same" class="validation"></p>
+                    </div>
+                </fieldset>
+
+                <fieldset class="sect-field-reg">
+                    <legend>Osobní údaje</legend>
+                    <div class="inputbox-reg">
+                        <label for="name">Jméno</label>
+                        <input type="text" id="name" name="name" placeholder="Jméno*" required>
+                        <p id="tagname" class="validation"></p>
+                    </div>
+                    <div class="inputbox-reg">
+                        <label for="surname">Přijmení</label>
+                        <input type="text" id="surname" name="surname" placeholder="Přijmení*" required>
+                        <p id="tagsurname" class="validation"></p>
+                    </div>
+                </fieldset>
+
+                <h4>* tyto položky jsou povinné a musí být zelená</h4>
+                <button type="submit" id="submit" class="login-reg">Zaregistrovat</button>
+            </form>
+        </div>
+    </section>
+
+    <script>
+        // Load header and nav
+        async function loadIncludes() {
+            try {
+                const headerRes = await fetch('header.html');
+                document.getElementById('header').innerHTML = await headerRes.text();
+                
+                const navRes = await fetch('nav.html');
+                document.getElementById('nav').innerHTML = await navRes.text();
+
+                updateNav();
+                updateHeaderUser();
+
+                // If already logged in, redirect to main
+                if (Session.isLoggedIn()) {
+                    window.location.href = '/articles.html';
+                }
+            } catch (error) {
+                console.error('Error loading includes:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadIncludes();
+
+            const passwordInput = document.getElementById('password');
+            const password2Input = document.getElementById('password2');
+            const nameInput = document.getElementById('name');
+            const surnameInput = document.getElementById('surname');
+
+            // Real-time validation
+            passwordInput.addEventListener('input', () => {
+                const pwd = passwordInput.value;
+                const pwd2 = password2Input.value;
+                const lengthEl = document.getElementById('length');
+                const sameEl = document.getElementById('same');
+
+                if (pwd.length >= 8) {
+                    lengthEl.textContent = '✓ Heslo má alespoň 8 znaků';
+                    lengthEl.style.color = 'green';
+                } else {
+                    lengthEl.textContent = '✗ Heslo musí mít alespoň 8 znaků';
+                    lengthEl.style.color = 'red';
+                }
+
+                if (pwd === pwd2 && pwd.length > 0) {
+                    sameEl.textContent = '✓ Hesla se shodují';
+                    sameEl.style.color = 'green';
+                } else if (pwd.length > 0 || pwd2.length > 0) {
+                    sameEl.textContent = '✗ Hesla se neshodují';
+                    sameEl.style.color = 'red';
+                }
+            });
+
+            password2Input.addEventListener('input', () => {
+                const pwd = passwordInput.value;
+                const pwd2 = password2Input.value;
+                const sameEl = document.getElementById('same');
+
+                if (pwd === pwd2 && pwd.length > 0) {
+                    sameEl.textContent = '✓ Hesla se shodují';
+                    sameEl.style.color = 'green';
+                } else if (pwd.length > 0 || pwd2.length > 0) {
+                    sameEl.textContent = '✗ Hesla se neshodují';
+                    sameEl.style.color = 'red';
+                }
+            });
+
+            nameInput.addEventListener('input', () => {
+                const name = nameInput.value;
+                const nameEl = document.getElementById('tagname');
+
+                if (isValidName(name)) {
+                    nameEl.textContent = '✓ Jméno je v pořádku';
+                    nameEl.style.color = 'green';
+                } else if (name.length > 0) {
+                    nameEl.textContent = '✗ Jméno může obsahovat pouze písmena';
+                    nameEl.style.color = 'red';
+                }
+            });
+
+            surnameInput.addEventListener('input', () => {
+                const surname = surnameInput.value;
+                const surnameEl = document.getElementById('tagsurname');
+
+                if (isValidName(surname)) {
+                    surnameEl.textContent = '✓ Přijmení je v pořádku';
+                    surnameEl.style.color = 'green';
+                } else if (surname.length > 0) {
+                    surnameEl.textContent = '✗ Přijmení může obsahovat pouze písmena';
+                    surnameEl.style.color = 'red';
+                }
+            });
+
+            document.getElementById('registerForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value;
+                const name = document.getElementById('name').value;
+                const surname = document.getElementById('surname').value;
+                const password = document.getElementById('password').value;
+                const password2 = document.getElementById('password2').value;
+                const errorDiv = document.getElementById('errorMessage');
+
+                // Validation
+                if (!isValidEmail(email)) {
+                    errorDiv.textContent = 'Neplatný email';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                if (!isPasswordMatch(password, password2)) {
+                    errorDiv.textContent = 'Hesla se neshodují nebo jsou příliš krátká';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                if (!isValidName(name) || !isValidName(surname)) {
+                    errorDiv.textContent = 'Jméno a přijmení mohou obsahovat pouze písmena';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                try {
+                    await register(email, name, surname, password, password2, '');
+                    // Login after registration
+                    await login(email, password);
+                    window.location.href = '/articles.html';
+                } catch (error) {
+                    errorDiv.textContent = error.message;
+                    errorDiv.style.display = 'block';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

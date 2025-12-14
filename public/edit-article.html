@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FACR.IS - Úprava článku</title>
+    <link rel="stylesheet" type="text/css" href="../styles/styles.css" media="all">
+    <link rel="stylesheet" href="../styles/print.css" media="print">
+    <link rel="icon" type="image/png" href="../img/logo.png">
+    <script src="api.js"></script>
+</head>
+<body>
+    <div id="header"></div>
+    <div id="nav"></div>
+
+    <section class="sect-reg">
+        <div class="edit">
+            <h2>Upravit článek</h2>
+            <form id="editArticleForm">
+                <div id="errorMessage" class="error" style="display:none;"></div>
+                <div id="successMessage" class="success" style="display:none;"></div>
+                
+                <input type="hidden" id="articleId" name="id">
+                
+                <label for="title">Název</label>
+                <input type="text" id="title" name="title" required>
+                
+                <label for="content">Obsah</label>
+                <textarea id="content" cols="40" rows="10" name="content" required></textarea>
+                
+                <button type="submit">Upravit</button>
+                <a href="my-articles.html">Zrušit</a>
+            </form>
+        </div>
+    </section>
+
+    <script>
+        // Load header and nav
+        async function loadIncludes() {
+            try {
+                const headerRes = await fetch('header.html');
+                document.getElementById('header').innerHTML = await headerRes.text();
+                
+                const navRes = await fetch('nav.html');
+                document.getElementById('nav').innerHTML = await navRes.text();
+
+                updateNav();
+                updateHeaderUser();
+
+                // Check if logged in
+                if (!Session.isLoggedIn()) {
+                    window.location.href = '/login.html';
+                }
+            } catch (error) {
+                console.error('Error loading includes:', error);
+            }
+        }
+
+        async function loadArticle() {
+            try {
+                // Get article ID from URL
+                const params = new URLSearchParams(window.location.search);
+                const articleId = params.get('id');
+
+                if (!articleId) {
+                    window.location.href = '/my-articles.html';
+                    return;
+                }
+
+                const article = await getArticle(articleId);
+
+                if (!article) {
+                    document.getElementById('errorMessage').textContent = 'Článek nenalezen.';
+                    document.getElementById('errorMessage').style.display = 'block';
+                    return;
+                }
+
+                document.getElementById('articleId').value = article.id;
+                document.getElementById('title').value = article.title;
+                document.getElementById('content').value = article.content;
+            } catch (error) {
+                console.error('Error loading article:', error);
+                document.getElementById('errorMessage').textContent = 'Chyba při načítání článku.';
+                document.getElementById('errorMessage').style.display = 'block';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadIncludes();
+            loadArticle();
+
+            document.getElementById('editArticleForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const articleId = document.getElementById('articleId').value;
+                const title = document.getElementById('title').value;
+                const content = document.getElementById('content').value;
+                const errorDiv = document.getElementById('errorMessage');
+                const successDiv = document.getElementById('successMessage');
+
+                if (!title || !content) {
+                    errorDiv.textContent = 'Všechna pole musí být vyplněna';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                try {
+                    await editArticle(articleId, title, content);
+                    successDiv.textContent = 'Článek byl úspěšně upraven!';
+                    successDiv.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        window.location.href = '/my-articles.html';
+                    }, 2000);
+                } catch (error) {
+                    errorDiv.textContent = error.message;
+                    errorDiv.style.display = 'block';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
