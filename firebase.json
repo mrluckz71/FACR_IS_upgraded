@@ -1,0 +1,14 @@
+﻿{
+  "hosting": {
+    "public": "public",
+    "rewrites": [
+      {
+        "source": "**",
+        "run": {
+          "serviceId": "www-upgraded-with-ai",
+          "region": "us-central1"
+        }
+      }
+    ]
+  }
+}
