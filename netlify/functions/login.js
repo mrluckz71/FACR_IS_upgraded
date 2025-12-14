@@ -20,6 +20,7 @@ exports.handler = async (event, context) => {
     }
 
     const user = getUser(email);
+      const user = await getUser(email);
     
     if (!user) {
       return {

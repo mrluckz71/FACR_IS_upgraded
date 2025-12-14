@@ -1,27 +1,14 @@
-const fs = require('fs');
-const path = require('path');
+const { db } = require('./firebase-config');
 
-const DB_FILE = path.join(__dirname, '../../data/article_database.json');
-
-// Read database
-function readDatabase() {
+// Read all articles
+async function readDatabase() {
   try {
-    const data = fs.readFileSync(DB_FILE, 'utf8');
-    return JSON.parse(data);
+    const snapshot = await db.ref('articles').once('value');
+    const data = snapshot.val() || {};
+    return Array.isArray(data) ? data : Object.values(data);
   } catch (error) {
     console.error('Error reading articles database:', error);
     return [];
-  }
-}
-
-// Save database
-function saveDatabase(db) {
-  try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(db), 'utf8');
-    return true;
-  } catch (error) {
-    console.error('Error saving articles database:', error);
-    return false;
   }
 }
 
@@ -78,31 +65,97 @@ function deleteArticle(id) {
 }
 
 // Delete all articles
-function deleteAllArticles() {
-  saveDatabase([]);
-  return true;
+async function getArticle(id) {
+  try {
+    const snapshot = await db.ref(`articles/${id}`).once('value');
+    return snapshot.val() || null;
+  } catch (error) {
+    console.error('Error getting article:', error);
+    return null;
+  }
+}
+
+// Get all articles
+async function getArticles() {
+  try {
+    const snapshot = await db.ref('articles').once('value');
+    const data = snapshot.val() || {};
+    return Array.isArray(data) ? data : Object.values(data);
+  } catch (error) {
+    console.error('Error getting articles:', error);
+    return [];
+  }
+}
+
+// Add new article
+async function addArticle(userId, title, email, content, date) {
+  try {
+    const articleId = generateId();
+    const newArticle = {
+      id: articleId,
+      user_id: userId,
+      title,
+      email,
+      content,
+      date,
+      createdAt: new Date().toISOString()
+    };
+    await db.ref(`articles/${articleId}`).set(newArticle);
+    return newArticle;
+  } catch (error) {
+    console.error('Error adding article:', error);
+    throw error;
+  }
+}
+
+// Edit article
+async function editArticle(id, title, content) {
+  try {
+    const article = await getArticle(id);
+    if (!article) return false;
+    
+    await db.ref(`articles/${id}`).update({
+      title,
+      content,
+      updatedAt: new Date().toISOString()
+    });
+    return true;
+  } catch (error) {
+    console.error('Error editing article:', error);
+    throw error;
+  }
+}
+
+// Delete article
+async function deleteArticle(id) {
+  try {
+    await db.ref(`articles/${id}`).remove();
+    return true;
+  } catch (error) {
+    console.error('Error deleting article:', error);
+    throw error;
+  }
+}
+
+// Delete all articles
+async function deleteAllArticles() {
+  try {
+    await db.ref('articles').remove();
+    return true;
+  } catch (error) {
+    console.error('Error deleting all articles:', error);
+    throw error;
+  }
 }
 
 // Get user's articles
-function getUserArticles(userId) {
-  const db = readDatabase();
-  return db.filter(article => article.user_id === userId);
+async function getUserArticles(userId) {
+  try {
+    const snapshot = await db.ref('articles').orderByChild('user_id').equalTo(userId).once('value');
+    const data = snapshot.val() || {};
+    return Array.isArray(data) ? data : Object.values(data);
+  } catch (error) {
+    console.error('Error getting user articles:', error);
+    return [];
+  }
 }
-
-// Generate unique ID
-function generateId() {
-  return Math.random().toString(16).substr(2, 9);
-}
-
-module.exports = {
-  readDatabase,
-  saveDatabase,
-  getArticle,
-  getArticles,
-  addArticle,
-  editArticle,
-  deleteArticle,
-  deleteAllArticles,
-  getUserArticles,
-  generateId
-};

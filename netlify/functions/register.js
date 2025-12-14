@@ -50,6 +50,7 @@ exports.handler = async (event, context) => {
     // Check if user already exists
     const existingUser = getUser(email);
     if (existingUser) {
+        const existingUser = await getUser(email);
       return {
         statusCode: 400,
         body: JSON.stringify({ error: 'Email already exists' })
@@ -58,6 +59,7 @@ exports.handler = async (event, context) => {
 
     // Add user
     const newUser = addUser(email, name, surname, password, photo || '');
+      const newUser = await addUser(email, name, surname, password, photo || '');
     const { password: _, ...userWithoutPassword } = newUser;
 
     return {

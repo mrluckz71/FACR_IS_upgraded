@@ -17,6 +17,7 @@ exports.handler = async (event, context) => {
     // GET /api/articles - Get all articles
     if (method === 'GET' && !queryParams.id && !queryParams.userId) {
       const articles = getArticles();
+        const articles = await getArticles();
       return {
         statusCode: 200,
         body: JSON.stringify({ success: true, articles })
@@ -26,6 +27,7 @@ exports.handler = async (event, context) => {
     // GET /api/articles?id=xxx - Get single article
     if (method === 'GET' && queryParams.id) {
       const article = getArticle(queryParams.id);
+        const article = await getArticle(queryParams.id);
       if (!article) {
         return {
           statusCode: 404,
@@ -41,6 +43,7 @@ exports.handler = async (event, context) => {
     // GET /api/articles?userId=xxx - Get user's articles
     if (method === 'GET' && queryParams.userId) {
       const articles = getUserArticles(queryParams.userId);
+        const articles = await getUserArticles(queryParams.userId);
       return {
         statusCode: 200,
         body: JSON.stringify({ success: true, articles })
@@ -59,6 +62,7 @@ exports.handler = async (event, context) => {
       }
 
       const newArticle = addArticle(userId, title, email, content, date || new Date().toISOString());
+        const newArticle = await addArticle(userId, title, email, content, date || new Date().toISOString());
       return {
         statusCode: 201,
         body: JSON.stringify({ success: true, article: newArticle })
@@ -77,6 +81,7 @@ exports.handler = async (event, context) => {
       }
 
       const success = editArticle(id, title, content);
+        const success = await editArticle(id, title, content);
       if (!success) {
         return {
           statusCode: 404,
@@ -93,6 +98,7 @@ exports.handler = async (event, context) => {
     // DELETE /api/articles?id=xxx - Delete article
     if (method === 'DELETE' && queryParams.id) {
       const success = deleteArticle(queryParams.id);
+        const success = await deleteArticle(queryParams.id);
       if (!success) {
         return {
           statusCode: 404,
@@ -108,6 +114,7 @@ exports.handler = async (event, context) => {
     // DELETE /api/articles?all=true - Delete all articles
     if (method === 'DELETE' && queryParams.all === 'true') {
       deleteAllArticles();
+        await deleteAllArticles();
       return {
         statusCode: 200,
         body: JSON.stringify({ success: true, message: 'All articles deleted' })

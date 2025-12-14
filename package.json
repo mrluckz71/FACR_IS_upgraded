@@ -4,7 +4,9 @@
   "description": "FACR IS Article Management System",
   "main": "index.js",
   "dependencies": {
-    "bcryptjs": "^2.4.3"
+    "bcryptjs": "^2.4.3",
+    "firebase-admin": "^12.0.0",
+    "firebase": "^10.5.0"
   },
   "devDependencies": {
     "netlify-cli": "^17.0.0"
