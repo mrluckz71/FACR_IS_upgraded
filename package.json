@@ -1,0 +1,20 @@
+{
+  "name": "facr-is-upgraded",
+  "version": "1.0.0",
+  "description": "FACR IS Article Management System",
+  "main": "index.js",
+  "dependencies": {
+    "bcryptjs": "^2.4.3"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  },
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo 'No build needed'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["facr", "articles", "netlify"],
+  "author": "",
+  "license": "ISC"
+}
