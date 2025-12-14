@@ -26,4 +26,14 @@ async function getClient() {
   return pool.connect();
 }
 
-module.exports = { query, getClient, pool };
+/**
+ * Generate a unique ID (mimic PHP uniqid)
+ * @returns {string} Unique ID
+ */
+function generateId() {
+  const timestamp = Date.now().toString(16);
+  const random = Math.random().toString(16).substring(2, 10);
+  return (timestamp + random).substring(0, 13).padEnd(13, '0');
+}
+
+module.exports = { query, getClient, pool, generateId };

@@ -1,12 +1,5 @@
-const fs = require('fs');
-const path = require('path');
 const bcrypt = require('bcryptjs');
-
-const DB_FILE = path.join(__dirname, '../../data/database.json');
-
-// Read database
-const bcrypt = require('bcryptjs');
-const { query } = require('./db');
+const { query, generateId } = require('./db');
 
 // Get user by email
 async function getUser(email) {
@@ -36,6 +29,7 @@ async function addUser(email, name, surname, password, photo) {
   }
 }
 
+// Get all users
 async function getAllUsers() {
   try {
     const res = await query('SELECT * FROM users ORDER BY created_at DESC');
@@ -46,29 +40,56 @@ async function getAllUsers() {
   }
 }
 
+// Get user by ID
+async function getUserById(userId) {
+  try {
+    const res = await query('SELECT * FROM users WHERE id = $1 LIMIT 1', [userId]);
+    return res.rows[0] || null;
+  } catch (err) {
+    console.error('getUserById error', err);
+    throw err;
+  }
+}
+
+// Update user
 async function updateUser(userId, userData) {
   try {
     const fields = [];
     const values = [];
     let idx = 1;
     for (const key in userData) {
-      fields.push(`${key} = $${idx}`);
-      values.push(userData[key]);
-      idx++;
+      if (key !== 'id') {
+        fields.push(`${key} = $${idx}`);
+        values.push(userData[key]);
+        idx++;
+      }
     }
     values.push(userId);
-    const sql = `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx}`;
-    await query(sql, values);
-    return true;
+    const sql = `UPDATE users SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`;
+    const res = await query(sql, values);
+    return res.rows[0] || null;
   } catch (err) {
     console.error('updateUser error', err);
     throw err;
   }
 }
 
-function generateId() {
-  return Math.random().toString(16).substr(2, 9);
+// Delete all users
+async function deleteAllUsers() {
+  try {
+    await query('DELETE FROM users');
+    return true;
+  } catch (err) {
+    console.error('deleteAllUsers error', err);
+    throw err;
+  }
 }
 
-module.exports = { getUser, addUser, getAllUsers, updateUser, generateId };
-  }
+module.exports = { 
+  getUser, 
+  getUserById,
+  addUser, 
+  getAllUsers, 
+  updateUser, 
+  deleteAllUsers 
+};
